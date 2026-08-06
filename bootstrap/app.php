@@ -3,6 +3,9 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\middleware\IsAdmin;
+use Illuminate\middleware\IsPetugas;
+use Illuminate\middleware\IsPeminjam;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,9 +14,18 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        //
+    ->withMiddleware(function (Middleware $middleware): void {
+    $middleware->api(prepend: [
+        \laravel\sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ]);
+
+    $middleware->alias([
+            'role.admin' => IsAdmin::class,
+            'role.petugas' => IsPetugas::class,
+            'role.peminjam' => IsPeminjam::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
