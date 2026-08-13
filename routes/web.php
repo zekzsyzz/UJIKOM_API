@@ -27,10 +27,22 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/kategori', [App\Http\Controllers\AdminController::class, 'indexkategori'])->name('kategori.index');
     Route::get('/kategori/create', [App\Http\Controllers\AdminController::class, 'createkategori'])->name('kategori.create');
     Route::post('/kategori', [App\Http\Controllers\AdminController::class, 'storekategori'])->name('kategori.store');
-
     Route::get('/kategori/{id}/edit', [App\Http\Controllers\AdminController::class, 'editkategori'])->name('kategori.edit');
     Route::put('/kategori/{id}', [App\Http\Controllers\AdminController::class, 'updatekategori'])->name('kategori.update');
     Route::delete('/kategori/{id}', [App\Http\Controllers\AdminController::class, 'destroykategori'])->name('kategori.destroy');
+
+    Route::get('/alat', [App\Http\Controllers\AdminController::class, 'indexalat'])->name('alat.index');
+    Route::get('/alat/create', [App\Http\Controllers\AdminController::class, 'createalat'])->name('alat.create');
+    Route::post('/alat', [App\Http\Controllers\AdminController::class, 'storealat'])->name('alat.store');
+    Route::get('/alat/{id}/edit', [App\Http\Controllers\AdminController::class, 'editalat'])->name('alat.edit');
+    Route::put('/alat/{id}', [App\Http\Controllers\AdminController::class, 'updatealat'])->name('alat.update');
+    Route::delete('/alat/{id}', [App\Http\Controllers\AdminController::class, 'destroyalat'])->name('alat.destroy');
+
+    Route::get('/peminjaman', [App\Http\Controllers\AdminController::class, 'indexpeminjaman'])->name('peminjaman.index');
+    Route::get('/peminjaman/create', [App\Http\Controllers\AdminController::class, 'createpeminjaman'])->name('peminjaman.create');
+    Route::post('/peminjaman', [App\Http\Controllers\AdminController::class, 'storepeminjaman'])->name('peminjaman.store');
+    Route::put('/peminjaman/{id}/status', [App\Http\Controllers\AdminController::class, 'updatepeminjaman'])->name('peminjaman.update');
+    Route::delete('/peminjaman/{id}', [App\Http\Controllers\AdminController::class, 'destroypeminjaman'])->name('peminjaman.destroy');
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){

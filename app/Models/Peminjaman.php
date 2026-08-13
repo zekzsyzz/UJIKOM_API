@@ -28,7 +28,7 @@ class peminjaman extends Model
 
     public function detailpinjams()
     {
-        return $this->hasMany(DetailPinjam::class, 'peminjaman_id');
+        return $this->hasMany(Detail_Pinjam::class, 'peminjaman_id');
     }
 
     public function pengembalian()

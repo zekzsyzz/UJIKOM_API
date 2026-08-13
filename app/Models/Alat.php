@@ -10,7 +10,7 @@ class alat extends Model
 {
     protected $table = 'alats';
 
-    protected $fillable = ['nama_alat', 'kategori_id', 'jumlah', 'kondisi'];
+    protected $fillable = ['nama_alat', 'kategori_id', 'jumlah', 'status_kondisi', 'deskripsi', 'foto'];
 
     public function kategori()
     {
