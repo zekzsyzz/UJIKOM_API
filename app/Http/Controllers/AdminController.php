@@ -385,8 +385,8 @@ class AdminController extends Controller
             }
         }
 
-        $peminjmana->delete();
+        $peminjaman->delete();
 
-        return redirect()->route('admin.peminjmana.index')->with('success', 'data peminjaman berhasil dihapus');
+        return redirect()->route('admin.peminjaman.index')->with('success', 'data peminjaman berhasil dihapus');
     }
 }
