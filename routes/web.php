@@ -43,6 +43,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/peminjaman', [App\Http\Controllers\AdminController::class, 'storepeminjaman'])->name('peminjaman.store');
     Route::put('/peminjaman/{id}/status', [App\Http\Controllers\AdminController::class, 'updatepeminjaman'])->name('peminjaman.update');
     Route::delete('/peminjaman/{id}', [App\Http\Controllers\AdminController::class, 'destroypeminjaman'])->name('peminjaman.destroy');
+
+    
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){
