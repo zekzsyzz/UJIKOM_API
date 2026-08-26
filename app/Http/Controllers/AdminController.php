@@ -8,9 +8,12 @@ use App\Models\Alat;
 use App\Models\Kategori;
 use App\Models\LogAktivitas;
 use App\Models\Peminjaman;
+use App\Models\Pengembalian;
+use Carbon\Carbon;
 use App\Models\Detail_Pinjam;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -388,5 +391,74 @@ class AdminController extends Controller
         $peminjaman->delete();
 
         return redirect()->route('admin.peminjaman.index')->with('success', 'data peminjaman berhasil dihapus');
+    }
+
+    public function indexpengembalian(Request $request)
+    {
+        $search = $request->input('search');
+        
+        // Mengambil data pengembalian beserta relasi peminjaman dan usernya
+        $pengembalians = Pengembalian::with(['peminjaman.user', 'peminjaman.alat'])
+            ->when($search, function ($query, $search) {
+                return $query->whereHas('peminjaman.user', function($q) use ($search) {
+                    $q->where('Name', 'like', "%{$search}%"); // Sesuaikan nama kolom nama user di database
+                })
+                ->orWhere('Kondisi_Kembali', 'like', "%{$search}%")
+                ->orWhere('Denda', 'like', "%{$search}%");
+            })
+            ->latest('Tgl_Kembali') // Urutkan dari yang terbaru dikembalikan
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.pengembalian.index', compact('pengembalians', 'search'));
+    }
+
+    public function createpengembalian($id_peminjaman)
+    {
+        $peminjaman = Peminjaman::with(['user', 'detailpinjams.alat'])->findOrFail($id_peminjaman);
+        
+        if ($peminjaman->Status == 'Dikembalikan') {
+            return redirect()->route('admin.peminjaman.index')->with('error', 'Alat sudah dikembalikan!');
+        }
+
+        $tglJatuhTempo = Carbon::parse($peminjaman->tgl_jatuh_tempo ?? $peminjaman->tgl_kembali)->startOfDay();
+        $tglHariIni    = Carbon::now()->startOfDay();
+        
+        $hariTerlambat = 0;
+    if ($tglHariIni->greaterThan($tglJatuhTempo)) {
+        $hariTerlambat = (int) $tglJatuhTempo->diffInDays($tglHariIni);
+    }
+
+    // 4. Hitung denda keterlambatan (misal Rp 5.000 / hari)
+    $tarifDendaPerHari = 5000; 
+    $dendaKeterlambatan = $hariTerlambat * $tarifDendaPerHari;
+
+    return view('admin.pengembalian.create', compact(
+        'peminjaman', 
+        'hariTerlambat', 
+        'dendaKeterlambatan'
+    ));
+    }
+
+    public function storePengembalian(Request $request, $id_peminjaman)
+    {
+        // 1. Buat data pengembalian baru
+        Pengembalian::create([
+            'peminjaman_id'   => $id_peminjaman,
+            'petugas_id'      => Auth::id(), 
+            'tgl_kembali'     => Carbon::now(),
+            'kondisi_kembali' => $request->kondisi_kembali,
+            'denda'           => $request->denda,
+        ]);
+
+        // 2. Cari data peminjaman yang terkait, lalu UPDATE statusnya otomatis
+        $peminjaman = Peminjaman::findOrFail($id_peminjaman);
+        $peminjaman->update([
+            'status' => 'dikembalikan' // Sesuaikan jika di DB kamu namanya 'Status' (huruf besar)
+        ]);
+
+        // 3. Arahkan ke halaman Riwayat Pengembalian dengan pesan sukses
+        return redirect()->route('admin.pengembalian.index')
+                        ->with('success', 'Proses pengembalian berhasil dicatat dan status peminjaman telah diperbarui!');
     }
 }

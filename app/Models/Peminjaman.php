@@ -26,6 +26,11 @@ class peminjaman extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function alat()
+    {
+        return $this->belongsTo(Alat::class, 'alat_id');
+    }
+
     public function detailpinjams()
     {
         return $this->hasMany(Detail_Pinjam::class, 'peminjaman_id');

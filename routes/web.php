@@ -44,7 +44,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/peminjaman/{id}/status', [App\Http\Controllers\AdminController::class, 'updatepeminjaman'])->name('peminjaman.update');
     Route::delete('/peminjaman/{id}', [App\Http\Controllers\AdminController::class, 'destroypeminjaman'])->name('peminjaman.destroy');
 
-    
+    Route::get('/pengembalian', [AdminController::class, 'indexpengembalian'])->name('pengembalian.index');
+    Route::get('/pengembalian/create/{id_peminjaman}', [AdminController::class, 'createpengembalian'])->name('pengembalian.create');
+    Route::post('/pengembalian/store/{id_peminjaman}', [AdminController::class, 'storepengembalian'])->name('pengembalian.store');
+// Tambahkan route destroy jika kamu butuh fitur hapus log pengembalian
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){
