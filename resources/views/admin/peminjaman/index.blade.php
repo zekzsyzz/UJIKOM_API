@@ -148,19 +148,6 @@
                                             Hapus
                                         </button>
                                     </form>
-
-                                    @if(strtolower($peminjaman->Status) !== 'dikembalikan')
-                                        <!-- TOMBOL MENUJU FORM CREATE PENGEMBALIAN -->
-                                        <!-- Pastikan $peminjaman->ID_Peminjaman sesuai dengan nama primary key di database kamu -->
-                                        <a href="{{ route('admin.pengembalian.create', $peminjaman->ID_Peminjaman ?? $peminjaman->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-100 border border-green-200 hover:bg-green-200 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                                            Proses Kembali
-                                        </a>
-                                        
-                                    @else
-                                        <!-- Teks jika sudah dikembalikan -->
-                                        <span class="text-xs text-gray-400 italic mr-2">Telah Selesai</span>
-                                    @endif
                                 </div>
                             </td>
                         </tr>

@@ -44,17 +44,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/peminjaman/{id}/status', [App\Http\Controllers\AdminController::class, 'updatepeminjaman'])->name('peminjaman.update');
     Route::delete('/peminjaman/{id}', [App\Http\Controllers\AdminController::class, 'destroypeminjaman'])->name('peminjaman.destroy');
 
-    Route::get('/pengembalian', [AdminController::class, 'indexpengembalian'])->name('pengembalian.index');
-    Route::get('/pengembalian/create/{id_peminjaman}', [AdminController::class, 'createpengembalian'])->name('pengembalian.create');
-    Route::post('/pengembalian/store/{id_peminjaman}', [AdminController::class, 'storepengembalian'])->name('pengembalian.store');
+    Route::get('/pengembalian', [App\Http\Controllers\AdminController::class, 'indexpengembalian'])->name('pengembalian.index');
+    Route::get('/pengembalian/create', [App\Http\Controllers\AdminController::class, 'createpengembalian'])->name('pengembalian.create');
+    Route::post('/pengembalian', [App\Http\Controllers\AdminController::class, 'storepengembalian'])->name('pengembalian.store');
+    Route::delete('/pengembalian/{id}', [App\Http\Controllers\AdminController::class, 'destroypengembalian'])->name('pengembalian.destroy');
 // Tambahkan route destroy jika kamu butuh fitur hapus log pengembalian
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){
     Route::get('/peminjaman', [App\Http\Controllers\PetugasController::class, 'indexpeminjaman'])->name('peminjaman.index');
     Route::post('/peminjaman/{id}/setuju', [App\Http\Controllers\PetugasController::class, 'setujuipeminjaman'])->name('peminjaman.setujui');
-
+    Route::post('/peminjaman/{id}/tolak', [App\Http\Controllers\PetugasController::class, 'tolakpeminjaman'])->name('peminjaman.tolak');
+    
+    Route::get('/pengembalian', [App\Http\Controllers\PetugasController::class, 'indexpengembalian'])->name('pengembalian.index');
     Route::post('/pengembalian/{id}', [App\Http\Controllers\PetugasController::class, 'prosespengembalian'])->name('pengembalian.proses');
+
+    Route::get('laporan', [App\Http\Controllers\PetugasController::class, 'laporan'])->name('laporan.index');
+    Route::get('laporan/cetak', [App\Http\Controllers\PetugasController::class, 'cetaklaporan'])->name('laporan.cetak');
 });
 
 Route::middleware(['auth', 'role:peminjam'])->prefix('peminjam')->name('peminjam.')->group(function(){
