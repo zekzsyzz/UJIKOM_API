@@ -116,19 +116,21 @@ class PetugasController extends Controller
 
     public function laporan(Request $request)
     {
-        $search = $request->input('search');
+        $status = $request->input('status');
+        $dari_tanggal = $request->input('dari_tanggal');
+        $sampai_tanggal = $request->input('sampai_tanggal');
 
-        $laporans = Peminjaman::with('user', 'detailpinjams.alat')
-        ->where('status', 'diajukan')
-        ->when($search, function($query, $search) {
-            return $query->whereHas('user', function($q) use($search){
-                $q->where('name', 'like', "%{$search}}");
-            });
-        })
-        ->latest()
-        ->get();
+        $laporans = Peminjaman::with(['user', 'detailpinjams.alat', 'pengembalian'])
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
+                return$query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
+            })
+            ->latest()
+            ->get();
 
-        return view('petugas.laporan.index', compact('laporans', 'search'));
+        return view('petugas.laporan.index', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
     }
 
     public function cetaklaporan(Request $request)
