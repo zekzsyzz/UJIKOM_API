@@ -39,6 +39,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function scopeTersedia($query)
+    {
+        return $query->where('stok', '>', 0)->where('status_kondisi', 'baik');
+    }
+
     public function peminjaman()
     {
         return $this->hasMany(Peminjaman::class);

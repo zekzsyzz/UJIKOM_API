@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\KategoriController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\AlatController;
 use App\Http\Controllers\API\PeminjamanController;
 use App\Http\Controllers\API\PengembalianController;
 use App\Http\Controllers\API\LogAktivitasController;
@@ -46,6 +47,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/pengembalian/{pengembalian}', [PengembalianController::class, 'store']);
 
         Route::get('/laporan-peminjaman', [LaporanController::class, 'index']);
+
+        Route::get('/katalog', [AlatController::class, 'katalog']);
     });
 
     Route::middleware('role.peminjam')->group(function () {

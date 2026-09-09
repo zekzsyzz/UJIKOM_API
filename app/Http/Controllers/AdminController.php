@@ -22,7 +22,7 @@ class AdminController extends Controller
         $logs = LogAktivitas::with('user')->latest()->take(10)->get();
         return view('admin.dashboard', compact('logs'));
     }
-
+    
     public function indexalat(Request $request)
     {
         $search = $request->input('search');

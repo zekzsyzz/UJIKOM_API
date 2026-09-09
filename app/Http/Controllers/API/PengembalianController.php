@@ -17,7 +17,7 @@ class PengembalianController extends Controller
     public function index(): JsonResponse
     {
         $user = auth()->user();
-        $query = Pengembalian::with(['peminjaman.user', 'peminjaman.detailPinjam.alat', 'petugas']);
+        $query = Pengembalian::with(['peminjaman.user', 'peminjaman.detailPinjams.alat', 'petugas']);
         
         if ($user->role === 'peminjam') {
             $query->whereHas('peminjaman', function ($q) use ($user) {
@@ -38,7 +38,7 @@ class PengembalianController extends Controller
         $user = auth()->user();
 
         // Eager load relasi
-        $pengembalian->load(['peminjaman.user', 'peminjaman.detailPinjam.alat', 'petugas']);
+        $pengembalian->load(['peminjaman.user', 'peminjaman.detailPinjams.alat', 'petugas']);
 
         // Otorisasi privasi
         if ($user->role === 'peminjam' && $pengembalian->peminjaman->user_id !== $user->id) {
@@ -56,7 +56,7 @@ class PengembalianController extends Controller
         try {
             $pengembalian = DB::transaction(function () use ($request) {
                 // Kunci baris peminjaman ini selama transaksi agar tidak dimanipulasi proses lain
-                $peminjaman = Peminjaman::with('detailPinjam')->lockForUpdate()->find($request->peminjaman_id);
+                $peminjaman = Peminjaman::with('detailPinjams')->lockForUpdate()->find($request->peminjaman_id);
 
                 if ($peminjaman->status !== 'dipinjam') {
                     throw new Exception("Data ditolak. Peminjaman ini berstatus '{$peminjaman->status}', bukan 'dipinjam'.");
@@ -82,7 +82,7 @@ class PengembalianController extends Controller
                 $peminjaman->update(['status' => $statusPeminjamanBaru]);
 
                 // 3. Kembalikan (tambah) stok alat berdasarkan detail_pinjam
-                foreach ($peminjaman->detailPinjam as $detail) {
+                foreach ($peminjaman->detailPinjams as $detail) {
                     $alat = Alat::lockForUpdate()->find($detail->alat_id);
                     // increment() otomatis menambah nilai pada field yang ditentukan
                     $alat->increment('stok', $detail->jumlah);
@@ -126,10 +126,10 @@ class PengembalianController extends Controller
     {
         try {
             DB::transaction(function () use ($pengembalian) {
-                $peminjaman = Peminjaman::with('detailPinjam')->lockForUpdate()->findOrFail($pengembalian->peminjaman_id);
+                $peminjaman = Peminjaman::with('detailPinjams')->lockForUpdate()->findOrFail($pengembalian->peminjaman_id);
 
                 // Tarik kembali stok ke gudang (karena status kembali dibatalkan, stok berkurang lagi)
-                foreach ($peminjaman->detailPinjam as $detail) {
+                foreach ($peminjaman->detailPinjams as $detail) {
                     $alat = Alat::lockForUpdate()->findOrFail($detail->alat_id);
 
                     if ($alat->stok < $detail->jumlah) {

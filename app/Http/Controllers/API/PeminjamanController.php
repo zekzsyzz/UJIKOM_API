@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Peminjaman\StorePeminjamanRequest;
 use App\Models\Alat;
+use App\Http\Resources\PeminjamanResource;
 use App\Models\Peminjaman;
 use App\Models\Detail_Pinjam;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,7 @@ class PeminjamanController extends Controller
     public function index(): JsonResponse
     {
         $user = auth()->user();
-        $query = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian']);
+        $query = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian']);
         
         if ($user->role === 'peminjam') {
             $query->where('user_id', $user->id);
@@ -59,7 +60,7 @@ class PeminjamanController extends Controller
                     ]);
                 }
 
-                return $peminjaman->load(['user', 'detailPinjam.alat']);
+                return $peminjaman->load(['user', 'detailPinjams.alat']);
             });
 
             return response()->json([
@@ -82,7 +83,7 @@ class PeminjamanController extends Controller
 
         return response()->json([
             'message' => 'Detail peminjaman berhasil diambil.',
-            'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjam.alat', 'pengembalian']))
+            'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjams.alat', 'pengembalian']))
         ]);
     }
 
@@ -126,7 +127,7 @@ class PeminjamanController extends Controller
 
             return response()->json([
                 'message' => 'Data permohonan peminjaman berhasil diperbarui.',
-                'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjam.alat']))
+                'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjams.alat']))
             ]);
 
         } catch (Exception $e) {
@@ -182,7 +183,7 @@ class PeminjamanController extends Controller
 
             return response()->json([
                 'message' => 'Peminjaman disetujui. Stok alat telah otomatis dikurangi.',
-                'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjam.alat']))
+                'data' => new PeminjamanResource($peminjaman->load(['user', 'detailPinjams.alat']))
             ]);
 
         } catch (Exception $e) {
@@ -192,7 +193,7 @@ class PeminjamanController extends Controller
 
     public function riwayat(): JsonResponse
     {
-        $riwayat = Peminjaman::with(['detailPinjam.alat', 'pengembalian'])
+        $riwayat = Peminjaman::with(['detailPinjams.alat', 'pengembalian'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
