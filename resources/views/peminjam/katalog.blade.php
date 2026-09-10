@@ -1,80 +1,110 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Alat - Peminjam</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@extends('layouts.app') 
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">Panel Peminjam</a>
-            <div class="d-flex">
-                <a href="{{ route('peminjam.riwayat') }}" class="btn btn-outline-light btn-sm me-2">Riwayat Pinjam</a>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-light btn-sm text-primary">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+@section('content')
+<!-- Container utama tanpa background tambahan, menyatu dengan layout bawaan -->
+<div class="w-full text-gray-800">
 
-    <div class="container">
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-
-        <h3 class="mb-3">Katalog Alat Tersedia</h3>
-
-        <form action="{{ route('peminjam.peminjaman.ajukan') }}" method="POST">
-            @csrf
-            <div class="card shadow mb-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Rencana Tanggal Kembali</label>
-                        <input type="date" name="tgl_kembali_plan" class="form-control" required>
-                    </div>
-
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th width="50">Pilih</th>
-                                <th>Nama Alat</th>
-                                <th>Kategori</th>
-                                <th>Stok Tersedia</th>
-                                <th width="150">Jumlah Pinjam</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($alats as $index => $alat)
-                                <tr>
-                                    <td class="text-center">
-                                        <input type="checkbox" name="alat_id[]" value="{{ $alat->id }}" class="form-check-input">
-                                    </td>
-                                    <td>{{ $alat->nama_alat }}</td>
-                                    <td>{{ $alat->kategori->nama_kategori ?? '-' }}</td>
-                                    <td>{{ $alat->stok }}</td>
-                                    <td>
-                                        <input type="number" name="jumlah[]" class="form-control form-control-sm" value="1" min="1" max="{{ $alat->stok }}">
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center">Tidak ada alat yang tersedia saat ini.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                    <button type="submit" class="btn btn-primary">Ajukan Peminjaman</button>
+    <!-- Form Pencarian & Filter (Dibuat mirip dengan kotak tabel di halaman Petugas) -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+        <form action="{{ route('peminjam.katalog') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-center">
+            
+            <!-- Input Cari dengan Ikon -->
+            <div class="relative w-full md:w-1/2">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <!-- Ikon Kaca Pembesar -->
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama alat..." class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-gray-50/50">
             </div>
+
+            <!-- Filter Kategori -->
+            <div class="w-full md:w-1/4">
+                <select name="kategori" class="w-full appearance-none px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500 bg-gray-50/50 text-gray-600">
+                    <option value="">Semua Kategori</option>
+                    @foreach($kategoris as $kat)
+                        <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
+                            {{ $kat->nama_kategori }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Tombol Cari (Disesuaikan warnanya agar senada dengan tombol gelap di Petugas) -->
+            <button type="submit" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg text-sm transition-colors flex justify-center items-center">
+                Cari
+            </button>
         </form>
     </div>
 
-</body>
-</html>
+    <!-- Grid Katalog Alat -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @forelse($alats as $alat)
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col">
+                
+                <!-- Area Gambar -->
+                <div class="relative w-full h-48 bg-gray-50 flex items-center justify-center border-b border-gray-100">
+                    @if($alat->gambar)
+                        <img src="{{ asset('storage/' . $alat->gambar) }}" alt="{{ $alat->nama_alat }}" class="w-full h-full object-cover">
+                    @else
+                        <!-- Placeholder Gambar -->
+                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    @endif
+                    
+                    <!-- Label Habis -->
+                    @if($alat->stok <= 0)
+                        <div class="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
+                            <span class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wide">Habis</span>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Area Detail Alat -->
+                <div class="p-4 flex flex-col flex-grow">
+                    <!-- Kategori -->
+                    <span class="text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded w-fit mb-2">
+                        {{ $alat->kategori->nama_kategori ?? 'Umum' }}
+                    </span>
+                    
+                    <!-- Nama Alat -->
+                    <h3 class="text-sm font-semibold text-gray-800 line-clamp-2 mb-4 leading-snug">
+                        {{ $alat->nama_alat }}
+                    </h3>
+                    
+                    <!-- Footer Card: Stok & Aksi -->
+                    <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-gray-400 block uppercase font-medium">Stok</span>
+                            <span class="text-xs font-bold {{ $alat->stok > 0 ? 'text-gray-800' : 'text-red-500' }}">
+                                {{ $alat->stok }} Unit
+                            </span>
+                        </div>
+                        
+                        @if($alat->stok > 0)
+                            <!-- Perhatikan perubahan nama route dan penambahan $alat->id di sini -->
+                            <a href="{{ route('peminjam.ajukan.create', $alat->id) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+                                Pinjam
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        @else
+                            <span class="text-sm font-medium text-gray-400 cursor-not-allowed">Kosong</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <!-- State Kosong -->
+            <div class="col-span-full bg-white rounded-xl border border-gray-200 p-10 text-center flex flex-col items-center">
+                <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <h3 class="text-sm font-semibold text-gray-700">Tidak ada alat ditemukan</h3>
+                <p class="text-xs text-gray-500 mt-1">Coba sesuaikan kata kunci pencarian Anda.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+        {{ $alats->links() }}
+    </div>
+
+</div>
+@endsection

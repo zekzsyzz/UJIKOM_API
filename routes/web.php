@@ -64,9 +64,11 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
 });
 
 Route::middleware(['auth', 'role:peminjam'])->prefix('peminjam')->name('peminjam.')->group(function(){
-    Route::get('/katalog', [App\Http\Controllers\PeminjamController::class, 'katalogalat'])->name('katalog');
-    Route::post('/peminjaman/ajukan', [App\Http\Controllers\PeminjamController::class, 'ajukanpeminjaman'])->name('peminjaman.ajukan');
-    Route::get('/riwayat', [App\Http\Controllers\PeminjamController::class, 'riwayatpeminjaman'])->name('riwayat');
+    Route::get('/katalog-alat', [PeminjamController::class, 'katalog'])->name('katalog');
+    Route::get('/peminjam/katalog/{id}/form', [PeminjamController::class, 'create'])->name('ajukan.create');
+    Route::post('/peminjam/katalog/ajukan', [PeminjamController::class, 'ajukanpeminjaman'])->name('ajukan');
+    Route::get('/peminjam/riwayat', [PeminjamController::class, 'riwayat'])->name('riwayat');
+    Route::post('/peminjam/riwayat/{id}/kembalikan', [PeminjamController::class, 'ajukankembali'])->name('kembalikan');
 });
 
 Route::middleware('guest')->group(function() {
