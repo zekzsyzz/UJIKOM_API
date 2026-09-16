@@ -399,7 +399,7 @@ class AdminController extends Controller
 
         if ($peminjaman->status == 'dipinjam') {
             foreach ($peminjaman->detailpinjams as $detail) {
-                $detail->alat->increament('stok', $detail->jumlah);
+                $detail->alat->increment('stok', $detail->jumlah);
             }
         }
 
