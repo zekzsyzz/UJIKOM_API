@@ -97,11 +97,15 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('logout') }}" method="POST">
+                    <!-- Form Logout -->
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="w-full">
                         @csrf
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-semibold py-2.5 rounded-xl transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Keluar Sistem
+                        <!-- Perhatikan: type diubah jadi "button" dan ditambahkan onclick -->
+                        <button type="button" onclick="openLogoutModal()" class="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl w-full transition-colors border border-red-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span>Logout</span>
                         </button>
                     </form>
                 </div>
@@ -143,9 +147,72 @@
 
         </div>
     </div>
+    <!-- Background Backdrop & Modal Container -->
+<div id="logoutModal" class="fixed inset-0 z-[99] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 duration-300">
+    
+    <!-- Modal Card -->
+    <div id="logoutCard" class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-all duration-300">
+        
+        <!-- Icon & Teks -->
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Konfirmasi Keluar</h3>
+            <p class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari aplikasi?</p>
+        </div>
+        
+        <!-- Tombol Aksi -->
+        <div class="flex gap-3 w-full">
+            <button type="button" onclick="closeLogoutModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-colors">
+                Batal
+            </button>
+            <button type="button" onclick="submitLogout()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-600/30 transition-colors">
+                Ya, Keluar
+            </button>
+        </div>
+        
+    </div>
+</div>
 
     <!-- Script Sederhana untuk Toggle Profile Card -->
     <script>
+        function openLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        const card = document.getElementById('logoutCard');
+        
+        // Tampilkan modal
+        modal.classList.remove('hidden');
+        
+        // Sedikit delay agar animasi Tailwind berjalan mulus
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        const card = document.getElementById('logoutCard');
+        
+        // Mainkan animasi keluar
+        modal.classList.add('opacity-0');
+        card.classList.remove('scale-100');
+        card.classList.add('scale-95');
+        
+        // Sembunyikan setelah animasi selesai (300ms)
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    function submitLogout() {
+        // Eksekusi pengiriman form logout yang ada di sidebar
+        document.getElementById('logout-form').submit();
+    }
         function toggleProfile() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('hidden');
