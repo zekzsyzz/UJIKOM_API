@@ -29,7 +29,7 @@
     <div class="relative z-10 w-full max-w-md bg-white/80 p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/50 backdrop-blur-lg mx-4 transition-all">
         
         <div class="text-center mb-8">
-            <h3 class="text-3xl font-bold text-slate-800 tracking-tight">Login Sistem</h3>
+            <h3 class="text-3xl font-bold text-slate-800 tracking-tight">SIMALAT</h3>
             <p class="text-slate-600 text-sm mt-2 font-medium">Manajemen Peminjaman Alat</p>
         </div>
 

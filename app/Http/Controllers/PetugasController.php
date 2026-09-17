@@ -68,7 +68,7 @@ class PetugasController extends Controller
         $search = $request->input('search');
 
         $peminjamans = Peminjaman::with('user', 'detailpinjams.alat')
-        ->where('status', ['dipinjam', 'telat'])
+        ->where('status', ['dikembalikan', 'telat'])
         ->when($search, function($query, $search) {
             return $query->whereHas('user', function($q) use($search){
                 $q->where('name', 'like', "%{$search}}");
@@ -99,7 +99,7 @@ class PetugasController extends Controller
                 'petugas_id' => auth()->id(),
             ]);
 
-            $peminjaman->update(['status' => 'dikembalikan']);
+            $peminjaman->update(['status' => 'selesai']);
 
             foreach ($peminjaman->detailpinjams as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);

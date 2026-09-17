@@ -52,11 +52,18 @@
                         @elseif($item->status == 'dipinjam')
                             <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Sedang Dipinjam</span>
                         @elseif($item->status == 'dikembalikan')
-                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">Menunggu Pengembalian</span>
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">Proses Pengembalian</span>
+                        @elseif($item->status == 'selesai')
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Selesai</span>
                         @elseif($item->status == 'telat')
                             <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">telat</span>
                         @else
                             <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-100">{{ ucfirst($item->status) }}</span>
+                        @endif
+                        @if($item->denda > 0)
+                            <div class="mt-2 text-xs text-red-600 font-medium">
+                                Denda: Rp {{ number_format($item->denda, 0, ',', '.') }}
+                            </div>
                         @endif
                     </td>
                     <td class="px-6 py-4 text-right">

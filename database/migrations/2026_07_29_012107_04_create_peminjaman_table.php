@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('tgl_pinjam');
             $table->string('tgl_kembali_plan');
-            $table->enum('status', ['diajukan', 'dipinjam', 'dikembalikan', 'telat'])->default('diajukan');
+            $table->enum('status', ['diajukan', 'dipinjam', 'dikembalikan', 'telat', 'selesai'])->default('diajukan');
             $table->timestamps();
             
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
