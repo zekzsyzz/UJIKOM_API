@@ -36,6 +36,11 @@ class PetugasController extends Controller
             foreach ($peminjaman->detailpinjams as $detail){
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok -= $detail->jumlah;
+
+                if ($alat->stok < $detail->jumlah) {
+                DB::rollBack();
+                return redirect()->back()->with('error', "Persetujuan gagal! Stok alat '{$alat->nama_alat}' tidak mencukupi (Sisa stok: {$alat->stok}).");
+            }
                 $alat->save();
             }
 
@@ -91,6 +96,10 @@ class PetugasController extends Controller
         try {
             $peminjaman = Peminjaman::with('detailpinjams')->findOrFail($id);
 
+            $tglSekarang = \Carbon\Carbon::now();
+            $tgl_batas = \Carbon\Carbon::parse($peminjaman->tgl_kembali_plan);
+            $statusAkhir = $tglSekarang->startOfDay()->greaterThan($tgl_batas->startOfDay()) ? 'telat' : 'selesai';
+            
             Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
                 'tgl_kembali' => now(),
@@ -99,7 +108,8 @@ class PetugasController extends Controller
                 'petugas_id' => auth()->id(),
             ]);
 
-            $peminjaman->update(['status' => 'selesai']);
+            $peminjaman->update(['status' => $statusAkhir]);
+            
 
             foreach ($peminjaman->detailpinjams as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
