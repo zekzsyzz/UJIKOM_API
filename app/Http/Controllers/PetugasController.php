@@ -72,57 +72,84 @@ class PetugasController extends Controller
     {
         $search = $request->input('search');
 
+        
         $peminjamans = Peminjaman::with('user', 'detailpinjams.alat')
-        ->where('status', ['dikembalikan', 'telat'])
-        ->when($search, function($query, $search) {
-            return $query->whereHas('user', function($q) use($search){
-                $q->where('name', 'like', "%{$search}}");
-            });
-        })
-        ->latest()
-        ->get();
+            // PERBAIKAN: Gunakan whereIn. Status aktif adalah dipinjam/telat, bukan dikembalikan
+            ->whereIn('status', ['dikembalikan']) 
+            ->when($search, function($query, $search) {
+                return $query->whereHas('user', function($q) use($search){
+                    // PERBAIKAN: Hapus kelebihan tanda } pada %{$search}%
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->get();
 
         return view('petugas.pengembalian.index', compact('peminjamans', 'search'));
     }
 
-    public function prosespengembalian(Request $request, $id)
+    public function prosespengembalian(Request $request)
     {
+        $peminjaman = Peminjaman::findOrFail($request->peminjaman_id);
+        $tgl_rencana = \Carbon\Carbon::parse($peminjaman->tgl_kembali_plan)->startOfDay();
+        $hari_ini = \Carbon\Carbon::now()->startOfDay();
+        
         $request->validate([
-            'kondisi_kembali' => 'required|string',
-            'denda' => 'nullable|integer',
+            'peminjaman_id'       => 'required|exists:peminjamen,id',
+            'detail_id'           => 'required|array',
+            'alat_id'             => 'required|array',
+            'kondisi_kembali'     => 'required|array',
+            'jumlah'              => 'required|array',
+            'denda_kerusakan'     => 'required|array',
+            'denda_keterlambatan' => 'nullable|numeric'
         ]);
 
         DB::beginTransaction();
         try {
-            $peminjaman = Peminjaman::with('detailpinjams')->findOrFail($id);
+            $totalDendaKerusakan = 0;
 
-            $tglSekarang = \Carbon\Carbon::now();
-            $tgl_batas = \Carbon\Carbon::parse($peminjaman->tgl_kembali_plan);
-            $statusAkhir = $tglSekarang->startOfDay()->greaterThan($tgl_batas->startOfDay()) ? 'telat' : 'selesai';
-            
+            foreach ($request->detail_id as $index => $detailId) {
+                $kondisiItem = $request->kondisi_kembali[$index];
+                $dendaItem = $request->denda_kerusakan[$index] ?? 0;
+                $totalDendaKerusakan += $dendaItem;
+
+                if ($kondisiItem == 'Baik') {
+                    $alat = Alat::find($request->alat_id[$index]);
+                    if ($alat) {
+                        $alat->increment('stok', $request->jumlah[$index]);
+                    }
+                }
+            }
+
+            $dendaTelat = $request->denda_keterlambatan ?? 0;
+            $totalDendaKeseluruhan = $totalDendaKerusakan + $dendaTelat;
+
             Pengembalian::create([
-                'peminjaman_id' => $peminjaman->id,
-                'tgl_kembali' => now(),
-                'kondisi_kembali' => $request->kondisi_kembali,
-                'denda' => $request->denda ?? 0,
-                'petugas_id' => auth()->id(),
+                'peminjaman_id'   => $request->peminjaman_id,
+                'petugas_id'      => auth()->id(),
+                'tgl_kembali'     => now(),
+                'kondisi_kembali' => 'Diproses',
+                'denda'           => $totalDendaKeseluruhan,
             ]);
 
-            $peminjaman->update(['status' => $statusAkhir]);
-            
-
-            foreach ($peminjaman->detailpinjams as $detail) {
-                $alat = Alat::findOrFail($detail->alat_id);
-                $alat->stok += $detail->jumlah;
-                $alat->save();
+            if ($hari_ini > $tgl_rencana) {
+                $statusAkhir = 'telat';
+            } else {
+                $statusAkhir = 'selesai';
             }
+
+            Peminjaman::where('id', $request->peminjaman_id)->update(['status' => $statusAkhir]);
+
             DB::commit();
-            return redirect()->back()->with('success', 'Pengembalian berhasil dicatat dan stok alat dipulihkan.');
+            return redirect()->back()->with('success', 'Pengembalian berhasil diproses. Total Denda: Rp ' . number_format($totalDendaKeseluruhan, 0, ',', '.'));
+
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    
 
     public function laporan(Request $request)
     {

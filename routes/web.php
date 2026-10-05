@@ -57,7 +57,7 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
     Route::post('/peminjaman/{id}/tolak', [App\Http\Controllers\PetugasController::class, 'tolakpeminjaman'])->name('peminjaman.tolak');
     
     Route::get('/pengembalian', [App\Http\Controllers\PetugasController::class, 'indexpengembalian'])->name('pengembalian.index');
-    Route::post('/pengembalian/{id}', [App\Http\Controllers\PetugasController::class, 'prosespengembalian'])->name('pengembalian.proses');
+    Route::post('/petugas/pengembalian/proses', [App\Http\Controllers\PetugasController::class, 'prosespengembalian'])->name('pengembalian.proses');
 
     Route::get('laporan', [App\Http\Controllers\PetugasController::class, 'laporan'])->name('laporan.index');
     Route::get('laporan/cetak', [App\Http\Controllers\PetugasController::class, 'cetaklaporan'])->name('laporan.cetak');
@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:peminjam'])->prefix('peminjam')->name('peminjam
     Route::post('/peminjam/katalog/ajukan', [PeminjamController::class, 'ajukanpeminjaman'])->name('ajukan');
     Route::get('/peminjam/riwayat', [PeminjamController::class, 'riwayat'])->name('riwayat');
     Route::post('/peminjam/riwayat/{id}/kembalikan', [PeminjamController::class, 'ajukankembali'])->name('kembalikan');
+    
 });
 
 Route::middleware('guest')->group(function() {

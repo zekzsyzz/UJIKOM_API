@@ -36,53 +36,77 @@ class PeminjamController extends Controller
 
     public function create($id)
     {
-        $alat = Alat::findOrFail($id);
+        // 1. Cek alat spesifik yang diklik dari katalog
+        $alatPilihan = Alat::findOrFail($id);
         
         // Cek jika stok habis, jangan izinkan buka form
-        if ($alat->stok <= 0) {
+        if ($alatPilihan->stok <= 0) {
             return redirect()->route('peminjam.katalog')->with('error', 'Maaf, stok alat ini sedang kosong.');
         }
 
-        return view('peminjam.form-pinjam', compact('alat'));
+        // 2. Ambil SEMUA alat (yang stoknya > 0) untuk mengisi list pilihan di dropdown <select>
+        $alats = Alat::where('stok', '>', 0)->get();
+
+        // Kirim $alats (untuk opsi dropdown) dan $alatPilihan (alat yang diklik) ke view
+        return view('peminjam.form-pinjam', compact('alats', 'alatPilihan'));
     }
     
     public function ajukanpeminjaman(Request $request)
     {
-        // Validasi Input
+        // 1. Validasi Input (Tambahkan validasi tgl_pinjam)
         $request->validate([
-            'tgl_kembali_plan' => 'required|date|after:today',
-            'alat_id'   => 'required|array', // Pastikan input alat berupa array
-            'alat_id.*' => 'exists:alats,id', // Memastikan alat ada di database
-            'jumlah'    => 'required|array', // Pastikan input jumlah berupa array
-            'jumlah.*'  => 'integer|min:1',
+            'tgl_pinjam'       => 'required|date',
+            'tgl_kembali_plan' => 'required|date|after_or_equal:tgl_pinjam',
+            'alat_id'          => 'required|array|min:1',
+            'alat_id.*'        => 'required|exists:alats,id',
+            'jumlah'           => 'required|array|min:1',
+            'jumlah.*'         => 'required|integer|min:1',
         ]);
+
+        // 2. Proteksi Duplikasi: Cegah user memilih alat yang sama lebih dari 1 kali di baris berbeda
+        $alatUnique = collect($request->alat_id)->unique();
+        if ($alatUnique->count() !== count($request->alat_id)) {
+            return back()->with('error', 'Gagal: Anda memilih alat yang sama lebih dari satu kali. Silakan gabungkan jumlahnya dalam satu baris saja.');
+        }
 
         DB::beginTransaction();
         try {
-            // 1. Buat Data Induk Peminjaman (Master)
+            // 3. Buat Data Induk Peminjaman (Gunakan tgl_pinjam dari Request, bukan now())
             $peminjaman = Peminjaman::create([
-                'user_id' => auth()->id(),
-                'tgl_pinjam' => now(),
+                'user_id'          => auth()->id(),
+                'tgl_pinjam'       => $request->tgl_pinjam,
                 'tgl_kembali_plan' => $request->tgl_kembali_plan,
-                'status' => 'diajukan',
+                'status'           => 'diajukan',
             ]);
 
-            // 2. Looping untuk Memasukkan Detail Barang yang Dipinjam
+            // 4. Looping untuk mengurangi stok dan membuat detail (Digabung agar lebih efisien)
             foreach ($request->alat_id as $index => $alatid) {
+                $jumlahpinjam = $request->jumlah[$index];
+                
+                // Gunakan lockForUpdate() agar stok aman jika ada 2 user pinjam alat bersamaan
+                $alat = Alat::lockForUpdate()->findOrFail($alatid); 
+
+                if ($alat->stok < $jumlahpinjam) {
+                    throw new \Exception("Stok alat '{$alat->nama_alat}' tidak mencukupi. Sisa stok: {$alat->stok}");
+                }
+
+                // Kurangi stok alat
+                $alat->stok -= $jumlahpinjam;
+                $alat->save();
+
+                // Masukkan Detail Barang
                 Detail_Pinjam::create([
                     'peminjaman_id' => $peminjaman->id, 
-                    'alat_id' => $alatid,
-                    'jumlah' => $request->jumlah[$index],
+                    'alat_id'       => $alatid,
+                    'jumlah'        => $jumlahpinjam,
                 ]);
             }
 
             DB::commit();
-
             return redirect()->route('peminjam.riwayat')->with('success', 'Pengajuan peminjaman berhasil dibuat dan menunggu persetujuan.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }

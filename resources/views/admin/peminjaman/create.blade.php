@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        @if(session('error'))
+        @if (session('error'))
             <div class="m-6 mb-0 flex items-center gap-3 bg-rose-50 border border-rose-100 text-rose-700 p-4 rounded-xl shadow-sm">
                 <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="font-semibold text-sm">{{ session('error') }}</span>
@@ -33,7 +33,7 @@
                 <label class="block text-slate-700 text-sm font-semibold mb-2 ml-1">Pilih Peminjam (User)</label>
                 <select name="user_id" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
                     <option value="">-- Pilih User --</option>
-                    @foreach($users as $user)
+                    @foreach ($users as $user)
                         <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                             {{ $user->name }} ({{ $user->email }})
                         </option>
@@ -57,6 +57,11 @@
 
             <hr class="border-slate-100">
 
+            <!-- Penampung Data Old (Dipisahkan agar Blade tidak bingung memparsing kurung) -->
+            @php
+                $oldAlatIds = old('alat_id', []);
+            @endphp
+
             <!-- Bagian Daftar Alat yang Dipinjam (Dinamis) -->
             <div>
                 <div class="flex items-center justify-between mb-3 ml-1">
@@ -64,29 +69,50 @@
                 </div>
                 
                 <div id="alat-container" class="space-y-3">
-                    <div class="flex items-center gap-3 alat-row bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <!-- Select Alat -->
-                        <div class="flex-1">
-                            <select name="alat_id[]" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
-                                <option value="">-- Pilih Alat --</option>
-                                @foreach($peminjaman as $alat)
-                                    <option value="{{ $alat->id }}">{{ $alat->nama_alat }} (Stok: {{ $alat->stok }})</option>
-                                @endforeach
-                            </select>
+                    @if (is_array($oldAlatIds) && count($oldAlatIds) > 0)
+                        @foreach ($oldAlatIds as $index => $oldAlatId)
+                            <div class="flex items-center gap-3 alat-row bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <div class="flex-1">
+                                    <select name="alat_id[]" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
+                                        <option value="">-- Pilih Alat --</option>
+                                        @foreach ($alats as $alat)
+                                            <option value="{{ $alat->id }}" {{ $oldAlatId == $alat->id ? 'selected' : '' }}>
+                                                {{ $alat->nama_alat }} (Stok: {{ $alat->stok }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="w-24 shrink-0">
+                                    <input type="number" name="jumlah[]" value="{{ old('jumlah.'.$index, 1) }}" min="1" placeholder="Jml" required
+                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center">
+                                </div>
+                                <button type="button" onclick="removeRow(this)" title="Hapus Alat"
+                                    class="shrink-0 p-2.5 text-slate-400 bg-white border border-slate-200 rounded-lg hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        @endforeach
+                    @else
+                        {{-- Tampilan Default --}}
+                        <div class="flex items-center gap-3 alat-row bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="flex-1">
+                                <select name="alat_id[]" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
+                                    <option value="">-- Pilih Alat --</option>
+                                    @foreach ($peminjaman as $alat)
+                                        <option value="{{ $alat->id }}">{{ $alat->nama_alat }} (Stok: {{ $alat->stok }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="w-24 shrink-0">
+                                <input type="number" name="jumlah[]" value="1" min="1" placeholder="Jml" required
+                                    class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center">
+                            </div>
+                            <button type="button" onclick="removeRow(this)" title="Hapus Alat"
+                                class="shrink-0 p-2.5 text-slate-400 bg-white border border-slate-200 rounded-lg hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                         </div>
-                        
-                        <!-- Input Jumlah -->
-                        <div class="w-24 shrink-0">
-                            <input type="number" name="jumlah[]" value="1" min="1" placeholder="Jml" required
-                                class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center">
-                        </div>
-                        
-                        <!-- Tombol Hapus Baris -->
-                        <button type="button" onclick="removeRow(this)" title="Hapus Alat"
-                            class="shrink-0 p-2.5 text-slate-400 bg-white border border-slate-200 rounded-lg hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
+                    @endif
                 </div>
 
                 <!-- Tombol Tambah Baris -->
@@ -113,15 +139,17 @@
     </div>
 </div>
 
-<!-- Script Dinamis Baris Alat -->
 <script>
 function addRow() {
     const container = document.getElementById('alat-container');
     const firstRow = container.querySelector('.alat-row');
     const newRow = firstRow.cloneNode(true);
     
-    // Reset nilai inputan pada baris baru
-    newRow.querySelector('select').value = '';
+    const selectBox = newRow.querySelector('select');
+    selectBox.value = '';
+    
+    Array.from(selectBox.options).forEach(opt => opt.selected = false);
+    
     newRow.querySelector('input').value = '1';
     
     container.appendChild(newRow);
@@ -130,7 +158,6 @@ function addRow() {
 function removeRow(button) {
     const rows = document.querySelectorAll('.alat-row');
     if (rows.length > 1) {
-        // Hapus elemen dengan animasi halus jika menggunakan library, atau remove() langsung
         button.closest('.alat-row').remove();
     } else {
         alert('Minimal harus ada 1 alat yang dipilih untuk peminjaman.');

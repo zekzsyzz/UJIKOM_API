@@ -94,47 +94,134 @@
                             </td>
 
                             <!-- Form Proses Pengembalian -->
-                            <td class="py-4 px-6 text-center">
-                                <form action="{{ route('petugas.pengembalian.proses', $item->id) }}" method="POST"
-                                    class="inline-block w-full max-w-[200px] bg-slate-50/70 p-3.5 rounded-xl border border-slate-200 text-left space-y-3 shadow-sm">
-                                    @csrf
-                                    <div>
-                                        <label class="block text-[11px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">Kondisi Kembali</label>
-                                        <select name="kondisi_kembali" required 
-                                            class="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white outline-none transition-all shadow-sm font-medium text-slate-700">
-                                            <option value="Baik">Baik</option>
-                                            <option value="Rusak Ringan">Rusak Ringan</option>
-                                            <option value="Rusak Berat">Rusak Berat</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">Denda (Rp)</label>
-                                        <input type="number" name="denda" value="0" placeholder="0" min="0"
-                                            class="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white outline-none transition-all shadow-sm font-medium text-slate-700">
-                                    </div>
-                                    <button type="submit" onclick="return confirm('Proses pengembalian alat ini?')"
-                                        class="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5 hover:shadow">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Terima
-                                    </button>
-                                </form>
+                            <td>
+                                <!-- PERBAIKAN: Gunakan $item->id -->
+                                <button type="button" onclick="openModal('modal-kembali-{{ $item->id }}')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-lg w-full transition-colors shadow-sm">
+                                    Proses Pengembalian
+                                </button>
                             </td>
+
+                            <!-- PERBAIKAN: Gunakan $item->id -->
+                            <div id="modal-kembali-{{ $item->id }}" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                                <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
+                                    <form action="{{ route('petugas.pengembalian.proses') }}" method="POST">
+                                        @csrf
+                                        <!-- PERBAIKAN: Gunakan $item->id -->
+                                        <input type="hidden" name="peminjaman_id" value="{{ $item->id }}">
+
+                                        <div class="bg-slate-900 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                            <!-- PERBAIKAN: Gunakan $item->user->name -->
+                                            <h3 class="text-lg font-bold text-white">Proses Pengembalian: {{ $item->user->name ?? 'Peminjam' }}</h3>
+                                            <button type="button" onclick="closeModal('modal-kembali-{{ $item->id }}')" class="text-slate-400 hover:text-white">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </div>
+                                        @php
+                                            $dendaOtomatis = 0;
+                                            $hariTelat = 0;
+                                            $tarifPerHari = 2000;
+
+                                            $tglRencana = \Carbon\Carbon::parse($item->tgl_kembali_plan)->startOfDay();
+                                            $hariIni = \Carbon\Carbon::now()->startOfDay();
+
+                                            // Jika hari ini melewati batas tanggal rencana kembali, hitung selisih harinya
+                                            if ($hariIni > $tglRencana) {
+                                                $hariTelat = $tglRencana->diffInDays($hariIni);
+                                                $dendaOtomatis = $hariTelat * $tarifPerHari;
+                                            }
+                                        @endphp
+                                        <div class="p-6 max-h-[60vh] overflow-y-auto space-y-4 bg-slate-50">
+                                            
+                                            <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-4 flex items-center justify-between">
+                                                <div>
+                                                    <h4 class="text-sm font-bold text-amber-800">Denda Keterlambatan</h4>
+                                                    <!-- Tambahkan informasi visual agar petugas tahu berapa hari telatnya -->
+                                                    @if($hariTelat > 0)
+                                                        <p class="text-xs font-semibold text-rose-600">Telat {{ $hariTelat }} Hari (Tarif: Rp {{ number_format($tarifPerHari, 0, ',', '.') }}/hari)</p>
+                                                    @else
+                                                        <p class="text-xs text-amber-600">Dihitung otomatis berdasarkan hari telat</p>
+                                                    @endif
+                                                </div>
+                                                
+                                                <!-- Ubah atribut value="0" menjadi value="{{ $dendaOtomatis }}" -->
+                                                <input type="number" name="denda_keterlambatan" value="{{ $dendaOtomatis }}" class="w-32 bg-slate-100 border border-amber-300 rounded-lg px-3 py-2 text-sm outline-none font-bold text-slate-700 cursor-not-allowed" readonly>
+                                            </div>
+
+                                            <h4 class="text-sm font-bold text-slate-700 border-b pb-2">Pengecekan Kondisi Per Alat:</h4>
+
+                                            <!-- PERBAIKAN: Gunakan $item->detailPinjams -->
+                                            @foreach($item->detailPinjams as $detail)
+                                                <div class="border border-slate-200 rounded-xl p-4 bg-white flex flex-col md:flex-row gap-4 items-start md:items-center shadow-sm">
+                                                    <div class="flex-1">
+                                                        <h5 class="font-bold text-slate-800">{{ $detail->alat->nama_alat ?? 'Alat' }}</h5>
+                                                        <p class="text-xs text-slate-500 mt-1">Jumlah: <span class="font-bold text-slate-700">{{ $detail->jumlah }} Unit</span></p>
+                                                        
+                                                        <input type="hidden" name="detail_id[]" value="{{ $detail->id }}">
+                                                        <input type="hidden" name="alat_id[]" value="{{ $detail->alat_id }}">
+                                                        <input type="hidden" name="jumlah[]" value="{{ $detail->jumlah }}">
+                                                    </div>
+
+                                                    <div class="w-full md:w-1/3">
+                                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kondisi</label>
+                                                        <select name="kondisi_kembali[]" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" required onchange="toggleDenda(this, {{ $detail->id }})">
+                                                            <option value="Baik">Baik</option>
+                                                            <option value="Rusak">Rusak</option>
+                                                            <option value="Hilang">Hilang</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="w-full md:w-1/3">
+                                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Denda Kerusakan (Rp)</label>
+                                                        <input type="number" name="denda_kerusakan[]" id="denda-{{ $detail->id }}" value="0" min="0" class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-colors" readonly>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        <div class="bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+                                            <!-- PERBAIKAN: Gunakan $item->id -->
+                                            <button type="button" onclick="closeModal('modal-kembali-{{ $item->id }}')" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">Batal</button>
+                                            <button type="submit" class="px-5 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-colors">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Selesaikan Pengembalian
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="py-12 text-center">
-                                <div class="flex flex-col items-center justify-center text-slate-400">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3 border border-slate-100">
-                                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    </div>
-                                    <p class="font-semibold text-slate-500">Tidak ada peminjaman yang sedang aktif</p>
-                                    <p class="text-xs mt-1">Data peminjam yang belum mengembalikan alat akan tampil di sini.</p>
-                                </div>
-                            </td>
-                        </tr>
+                        <!-- (Isi area kosong biarkan sama) -->
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    // Fungsi untuk membuka/mengunci input denda berdasarkan kondisi alat
+    function toggleDenda(selectElement, detailId) {
+        const inputDenda = document.getElementById('denda-' + detailId);
+        
+        if (selectElement.value === 'Baik') {
+            inputDenda.value = 0;
+            inputDenda.readOnly = true;
+            inputDenda.classList.add('bg-slate-100');
+            inputDenda.classList.remove('bg-white');
+        } else {
+            // Jika Rusak / Hilang, buka input denda
+            inputDenda.readOnly = false;
+            inputDenda.classList.remove('bg-slate-100');
+            inputDenda.classList.add('bg-white');
+            inputDenda.focus();
+        }
+    }
+</script>
 @endsection

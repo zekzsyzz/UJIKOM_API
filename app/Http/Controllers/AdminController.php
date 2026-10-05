@@ -12,6 +12,9 @@ use App\Models\Pengembalian;
 use Carbon\Carbon;
 use App\Models\Detail_Pinjam;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Observers\AlatObserver;
+use Illuminate\Observers\PeminjamanObserver;
+use Illuminate\Observers\PengembalianObserver;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -332,10 +335,10 @@ class AdminController extends Controller
                 'status' => 'diajukan',
             ]);
 
-            foreach($request->alat_id as $index => $alatid) {
+            foreach($request->alat_id as $index => $alatId) {
                 $jumlahpinjam = $request->jumlah[$index];
 
-                $alat = Alat::findOrFail($alatid);
+                $alat = Alat::findOrFail($alatId);
 
             if ($alat->stok < $jumlahpinjam) {
                 throw new \Exception("stok alat '{$alat->nama_alat}' tidak mencukupi");
@@ -343,7 +346,7 @@ class AdminController extends Controller
 
             Detail_Pinjam::create([
                 'peminjaman_id' => $peminjaman->id,
-                'alat_id' => $alatid,
+                'alat_id' => $alatId,
                 'jumlah' => $jumlahpinjam
             ]);
             }
@@ -425,45 +428,52 @@ class AdminController extends Controller
         return view('admin.pengembalian.index', compact('pengembalians'));
     }
 
-    // Form Tambah (Khusus Admin)
     public function createpengembalian()
     {
-        // Hanya mengambil transaksi yang berstatus 'dipinjam'
         $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])
-            ->where('status', 'dipinjam')
+            ->whereIn('status', ['dikembalikan', 'telat'])
+            ->whereDoesntHave('pengembalian')
             ->get();
 
         return view('admin.pengembalian.create', compact('peminjamans'));
     }
 
-    // Simpan Pengembalian (Khusus Admin)
-    // Simpan Pengembalian (Khusus Admin)
+    
     public function storepengembalian(Request $request)
     {
         $request->validate([
-            'peminjaman_id'   => 'required|exists:peminjamen,id',
-            'kondisi_kembali' => 'required|string',
-            'denda'           => 'required|numeric|min:0',
-        ]);
+        'peminjaman_id'   => 'required|exists:peminjamen,id', 
+        'kondisi_kembali' => 'required|string|max:255',
+        'denda'           => 'required|numeric|min:0',
+    ]);
 
-        DB::beginTransaction();
+    DB::beginTransaction();
         try {
+            $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($request->peminjaman_id);
+
+            $tglPlan = Carbon::parse($peminjaman->tgl_kembali_plan);
+            $tglAktual = Carbon::now(); // Gunakan waktu saat tombol simpan ditekan
+
+            // TAHAP VALIDASI STATUS TELAT
+            if ($tglAktual->startOfDay()->greaterThan($tglPlan->startOfDay())) {
+                $statusAkhir = 'telat';
+            } else {
+                $statusAkhir = 'selesai';
+            }
+            
             // 1. Simpan Log Pengembalian
             Pengembalian::create([
                 'peminjaman_id'   => $request->peminjaman_id,
                 'petugas_id'      => Auth::id(),
-                'tgl_kembali'     => Carbon::now(),
+                'tgl_kembali'     => $tglAktual,
                 'kondisi_kembali' => $request->kondisi_kembali,
-                'denda'           => $request->denda,
+                'denda'           => $request->denda, // Denda sudah dihitung dari JavaScript dan dikirim lewat form
             ]);
-
-            // 2. Ambil data peminjaman beserta detail dan alatnya
-            $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($request->peminjaman_id);
             
-            // 3. Ubah Status Peminjaman Otomatis
-            $peminjaman->update(['status' => 'dikembalikan']);
+            // 2. Ubah Status Peminjaman Otomatis ('selesai' atau 'telat')
+            $peminjaman->update(['status' => $statusAkhir]);
 
-            // 4. Kembalikan stok alat (Ini logika yang kurang sebelumnya)
+            // 3. Kembalikan stok alat
             foreach ($peminjaman->detailPinjams as $detail) {
                 if ($detail->alat) {
                     $detail->alat->increment('stok', $detail->jumlah);
@@ -472,8 +482,8 @@ class AdminController extends Controller
 
             DB::commit();
             return redirect()->route('admin.pengembalian.index')
-                             ->with('success', 'Data pengembalian berhasil ditambahkan dan stok diperbarui.');
-                             
+                            ->with('success', "Data pengembalian berhasil ditambahkan (Status: {$statusAkhir}) dan stok diperbarui.");
+                            
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

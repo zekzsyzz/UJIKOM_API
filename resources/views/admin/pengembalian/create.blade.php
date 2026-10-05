@@ -18,7 +18,8 @@
                     <option value="" disabled selected>-- Pilih Transaksi Peminjaman --</option>
                     @foreach($peminjamans as $p)
                         <option value="{{ $p->id }}">
-                            {{ $p->user->name ?? 'User Tidak Dikenal' }} (Tgl Pinjam: {{ \Carbon\Carbon::parse($p->tgl_pinjam)->format('d M Y') }})
+                            {{ $p->user->name ?? 'User Tidak Dikenal' }} (Rencana kembali: {{ $p->tgl_kembali_plan }}) - Status :
+                            {{ ucfirst($p->status) }}
                         </option>
                     @endforeach
                 </select>
@@ -91,8 +92,12 @@
         // Render List Barang
         const listBarangEl = document.getElementById('list-barang');
         listBarangEl.innerHTML = '';
-        if (data.detail_pinjams && data.detail_pinjams.length > 0) {
-            data.detail_pinjams.forEach(detail => {
+        
+        // Perbaikan: Menangkap semua format relasi (detail_pinjams, detailPinjams, dll)
+        const details = data.detail_pinjams || data.detailPinjams || data.detailpinjams || [];
+        
+        if (details.length > 0) {
+            details.forEach(detail => {
                 const namaAlat = detail.alat ? detail.alat.nama_alat : 'Alat Dihapus';
                 listBarangEl.innerHTML += `<div>• ${namaAlat} <span class="text-slate-500 text-xs">(${detail.jumlah} pcs)</span></div>`;
             });
@@ -101,8 +106,25 @@
         }
 
         // Render Tanggal Jatuh Tempo
-        const rawTglKembali = data.tgl_jatuh_tempo || data.tgl_kembali;
-        const tglJatuhTempo = new Date(rawTglKembali);
+        // Perbaikan: Pastikan mengambil kolom tgl_kembali_plan (sesuai penamaan di Controller)
+        // Tambahkan validasi jika tanggal tidak ada
+        const rawTglKembali = data.tgl_kembali_plan || data.rencana_kembali || data.tgl_jatuh_tempo || data.tgl_kembali;
+        
+        if (!rawTglKembali) {
+            document.getElementById('tgl-jatuh-tempo').innerText = "Tanggal tidak valid";
+            return;
+        }
+
+        // Konversi ke format Date
+        // Jika format string SQL "YYYY-MM-DD HH:mm:ss", ganti spasi dengan "T" agar Date() JS tidak error (khususnya di Safari/iOS)
+        const safeDateString = rawTglKembali.replace(' ', 'T'); 
+        const tglJatuhTempo = new Date(safeDateString);
+        
+        if (isNaN(tglJatuhTempo.getTime())) {
+             document.getElementById('tgl-jatuh-tempo').innerText = "Format Tanggal Salah";
+             return;
+        }
+
         document.getElementById('tgl-jatuh-tempo').innerText = tglJatuhTempo.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 
         // Hitung Keterlambatan
@@ -118,11 +140,11 @@
 
         if (selisihHari > 0) {
             const totalDenda = selisihHari * TARIF_DENDA_PER_HARI;
-            alertEl.className = "p-3 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-2";
+            alertEl.className = "p-3 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-2 mt-3";
             alertEl.innerHTML = `⚠️ Terlambat <strong>${selisihHari} Hari</strong>. Denda keterlambatan sistem: <strong>Rp ${totalDenda.toLocaleString('id-ID')}</strong>`;
             dendaInput.value = totalDenda;
         } else {
-            alertEl.className = "p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-2";
+            alertEl.className = "p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-2 mt-3";
             alertEl.innerHTML = `✅ Dikembalikan tepat waktu. Tidak ada denda keterlambatan.`;
             dendaInput.value = 0;
         }
