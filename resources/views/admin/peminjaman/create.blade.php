@@ -57,12 +57,11 @@
 
             <hr class="border-slate-100">
 
-            <!-- Penampung Data Old (Dipisahkan agar Blade tidak bingung memparsing kurung) -->
             @php
                 $oldAlatIds = old('alat_id', []);
             @endphp
 
-            <!-- Bagian Daftar Alat yang Dipinjam (Dinamis) -->
+
             <div>
                 <div class="flex items-center justify-between mb-3 ml-1">
                     <label class="text-slate-700 text-sm font-semibold">Daftar Alat yang Dipinjam</label>

@@ -9,7 +9,7 @@ class detail_pinjam extends Model
 {
     protected $table = 'detail_pinjams';
 
-    protected $fillable = ['peminjaman_id', 'alat_id', 'jumlah_pinjam'];
+    protected $fillable = ['peminjaman_id', 'alat_id', 'jumlah'];
 
     protected function casts(): array
     {
