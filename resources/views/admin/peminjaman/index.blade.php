@@ -136,6 +136,7 @@
                                             <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : '' }}>Set: Dipinjam</option>
                                             <option value="dikembalikan" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : '' }}>Set: Dikembalikan</option>
                                             <option value="telat" {{ $peminjaman->status == 'telat' ? 'selected' : '' }}>Set: Telat</option>
+                                            <option value="selesai" {{ $peminjaman->status == 'selesai' ? 'selected' : '' }}>Set: Selesai</option>
                                         </select>
                                     </form>
 

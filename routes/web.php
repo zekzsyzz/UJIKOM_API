@@ -54,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){
     Route::get('/peminjaman', [App\Http\Controllers\PetugasController::class, 'indexpeminjaman'])->name('peminjaman.index');
     Route::post('/peminjaman/{id}/setuju', [App\Http\Controllers\PetugasController::class, 'setujuipeminjaman'])->name('peminjaman.setujui');
-    Route::post('/peminjaman/{id}/tolak', [App\Http\Controllers\PetugasController::class, 'tolakpeminjaman'])->name('peminjaman.tolak');
+    Route::delete('/peminjaman/{id}/tolak', [App\Http\Controllers\PetugasController::class, 'tolakpeminjaman'])->name('peminjaman.tolak');
     
     Route::get('/pengembalian', [App\Http\Controllers\PetugasController::class, 'indexpengembalian'])->name('pengembalian.index');
     Route::post('/petugas/pengembalian/proses', [App\Http\Controllers\PetugasController::class, 'prosespengembalian'])->name('pengembalian.proses');

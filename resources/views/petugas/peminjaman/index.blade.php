@@ -4,7 +4,6 @@
 @section('header-title', 'Daftar Pengajuan Peminjaman Alat')
 
 @section('content')
-{{-- Pembungkus utama dibuat full width & mengambil sisa area --}}
 <div class="w-full flex-1 min-h-screen bg-slate-50 p-6 md:p-8">
     @if(session('success'))
         <div class="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-xl shadow-sm">
@@ -80,13 +79,26 @@
                             <!-- Aksi / Status -->
                             <td class="py-4 px-6 text-center">
                                 @if($item->status == 'diajukan')
-                                    <form action="{{ route('petugas.peminjaman.setujui', $item->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" onclick="return confirm('Setujui peminjaman alat ini?')"
-                                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm">
-                                            Setujui
-                                        </button>
-                                    </form>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <!-- Form Setujui -->
+                                        <form action="{{ route('petugas.peminjaman.setujui', $item->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" onclick="return confirm('Setujui peminjaman alat ini?')"
+                                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm">
+                                                Setujui
+                                            </button>
+                                        </form>
+
+                                        <!-- Form Tolak -->
+                                        <form action="{{ route('petugas.peminjaman.tolak', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menolak dan menghapus pengajuan peminjaman ini?');">
+                                            @csrf
+                                            @method('DELETE') 
+                                            <button type="submit" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                Tolak
+                                            </button>
+                                        </form>
+                                    </div>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200">
                                         {{ ucfirst($item->status) }}

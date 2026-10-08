@@ -77,14 +77,14 @@
                             <div class="flex text-sm text-slate-600 justify-center">
                                 <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 px-1">
                                     <span>Upload sebuah file</span>
-                                    <input type="file" name="gambar" accept="image/*" class="sr-only">
+                                    <input type="file" name="foto" accept="image/*" class="sr-only">
                                 </label>
                                 <p class="pl-1">atau drag and drop</p>
                             </div>
                             <p class="text-xs text-slate-500">PNG, JPG, GIF up to 2MB</p>
                         </div>
                     </div>
-                    @error('gambar') <span class="text-red-500 text-xs mt-1 ml-1 block font-medium">{{ $message }}</span> @enderror
+                    @error('foto') <span class="text-red-500 text-xs mt-1 ml-1 block font-medium">{{ $message }}</span> @enderror
                 </div>
             </div>
 

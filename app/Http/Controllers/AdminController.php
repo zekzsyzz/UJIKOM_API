@@ -65,7 +65,7 @@ class AdminController extends Controller
 
         $data = $request->all();
 
-        if($request->Hasfile('foto')) {
+        if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('storage/alat'), $filename);
@@ -129,7 +129,7 @@ class AdminController extends Controller
     {
         $alat = Alat::findOrFail($id);
 
-        if ($alat->foto && $file_exists(public_path($alat_gambar))) {
+        if ($alat->foto && file_exists(public_path($alat->foto))) {
             unlink(public_path($alat->foto));
         }
 
@@ -364,7 +364,7 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::with('detailpinjams.alat')->findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:diajukan,dipinjam,dikembalikan,telat',
+            'status' => 'required|in:diajukan,dipinjam,dikembalikan,telat,selesai',
         ]);
 
         DB::beginTransaction();
@@ -380,7 +380,7 @@ class AdminController extends Controller
                     }
                     $alat->decrement('stok', $detail->jumlah);
                 }
-            }elseif ($statuslama == 'dipinjam' && ($statusbaru == 'dikembalikan')) {
+            }elseif ($statuslama == 'dipinjam' && ($statusbaru == 'selesai')) {
                 foreach ($peminjaman->detailpinjams as $detail) {
                     $detail->alat->increment('stok', $detail->jumlah);
                 }
