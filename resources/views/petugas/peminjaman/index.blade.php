@@ -75,7 +75,6 @@
                                     @endforeach
                                 </ul>
                             </td>
-
                             <!-- Aksi / Status -->
                             <td class="py-4 px-6 text-center">
                                 @if($item->status == 'diajukan')

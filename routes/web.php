@@ -48,7 +48,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pengembalian/create', [App\Http\Controllers\AdminController::class, 'createpengembalian'])->name('pengembalian.create');
     Route::post('/pengembalian', [App\Http\Controllers\AdminController::class, 'storepengembalian'])->name('pengembalian.store');
     Route::delete('/pengembalian/{id}', [App\Http\Controllers\AdminController::class, 'destroypengembalian'])->name('pengembalian.destroy');
-// Tambahkan route destroy jika kamu butuh fitur hapus log pengembalian
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function(){

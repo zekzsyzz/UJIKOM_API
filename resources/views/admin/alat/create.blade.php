@@ -7,7 +7,6 @@
 <div class="max-w-3xl mx-auto">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         
-        <!-- Form Header -->
         <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
             <div class="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
@@ -88,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="pt-4 mt-6 border-t border-slate-100 flex items-center justify-end gap-3">
                 <a href="{{ route('admin.alat.index') }}" 
                     class="px-6 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all">

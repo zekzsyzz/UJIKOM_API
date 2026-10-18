@@ -17,7 +17,7 @@ class PetugasController extends Controller
         ->where('status', 'diajukan')
         ->when($search, function($query, $search) {
             return $query->whereHas('user', function($q) use($search){
-                $q->where('name', 'like', "%{$search}}");
+                $q->where('name', 'like', "%{$search}%");
             });
         })
         ->latest()
