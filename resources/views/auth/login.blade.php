@@ -83,6 +83,9 @@
                 </button>
             </div>
         </form>
+        <p class="mt-6 text-center text-sm text-slate-600">
+            Belum punya akun? 
+            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:underline">Daftar Sekarang</a>
     </div>
 
 </body>

@@ -72,6 +72,8 @@ Route::middleware(['auth', 'role:peminjam'])->prefix('peminjam')->name('peminjam
 });
 
 Route::middleware('guest')->group(function() {
+    Route::get('/register', [App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [App\Http\Controllers\AuthController::class, 'register']);
     Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 });
