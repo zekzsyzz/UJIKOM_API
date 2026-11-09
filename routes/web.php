@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\PeminjamController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfilController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -78,4 +80,9 @@ Route::middleware('guest')->group(function() {
     Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 });
 
-Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout')->middleware('auth');
+Route::middleware('auth')->group(function() {
+    Route::get('/profil', [App\Http\Controllers\ProfilController::class, 'index'])->name('profil.index');
+    Route::get('/profil/edit', [App\Http\Controllers\ProfilController::class, 'edit'])->name('profil.edit');
+    Route::put('/profil', [App\Http\Controllers\ProfilController::class, 'update'])->name('profil.update');
+    Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout')->middleware('auth');
+});

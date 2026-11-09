@@ -19,7 +19,7 @@
     <div class="flex h-screen w-full overflow-hidden">
 
         <!-- SIDEBAR -->
-        <aside class="w-72 bg-slate-900 text-slate-300 flex-col hidden md:flex border-r border-slate-800 z-20 shadow-2xl shrink-0">
+        <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col hidden md:flex border-r border-slate-800 z-20 shadow-2xl shrink-0">
             <!-- Header Sidebar (Logo) -->
             <div class="h-20 flex items-center px-6 border-b border-slate-800 shrink-0">
                 <div class="flex items-center gap-3">
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <!-- Navigasi -->
+            <!-- Navigasi Menu -->
             <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                 @if(auth()->user()->role == 'admin')
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600/10 text-blue-500 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
@@ -84,57 +84,37 @@
                 @endif
             </nav>
 
-            <!-- FOOTER SIDEBAR -->
+            <!-- FOOTER SIDEBAR (PROFIL & MENU SETTING) -->
             <div class="relative p-4 mt-auto border-t border-slate-800 shrink-0">
-                <div id="profileDropdown" class="hidden absolute bottom-full left-4 right-4 mb-3 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-4 transition-all duration-200 transform">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-700">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-emerald-400 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                            {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
-                        </div>
-                        <div class="overflow-hidden">
-                            <p class="text-white font-bold truncate">{{ auth()->user()->name ?? 'User' }}</p>
-                            <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email ?? 'admin@sistem.com' }}</p>
-                        </div>
+                <a href="{{ route('profil.index') }}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/60 transition-all text-left w-full group">
+                    <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                        {{ substr(Auth::user()->name ?? 'U', 0, 1) }}
                     </div>
-                    
-                    <!-- Form Logout -->
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="w-full">
-                        @csrf
-                        <!-- Perhatikan: type diubah jadi "button" dan ditambahkan onclick -->
-                        <button type="button" onclick="openLogoutModal()" class="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl w-full transition-colors border border-red-100">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            <span>Logout</span>
-                        </button>
-                    </form>
-                </div>
-
-                <button onclick="toggleProfile()" class="w-full flex items-center gap-3 p-2 hover:bg-slate-800 rounded-xl transition-colors group">
-                    <div class="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                        {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                    <div class="overflow-hidden flex-1">
+                        <p class="text-sm font-semibold text-white truncate group-hover:text-blue-400 transition-colors">{{ Auth::user()->name ?? 'User' }}</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">{{ Auth::user()->role ?? 'User' }}</p>
                     </div>
-                    <div class="text-left flex-1 overflow-hidden">
-                        <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name ?? 'User' }}</p>
-                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">{{ auth()->user()->role ?? 'Admin' }}</p>
-                    </div>
-                    <svg class="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                </button>
+                    <!-- Icon Setting / Gear -->
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </a>
             </div>
         </aside>
 
         <!-- MAIN CONTENT CONTAINER -->
-        <div class="flex-1 flex flex-col h-screen w-full bg-slate-50 relative">
+        <div class="flex-1 flex flex-col h-screen w-full bg-slate-50 relative overflow-hidden">
 
             <!-- NAVBAR ATAS -->
-            <header class="bg-white/80 backdrop-blur-md h-20 flex items-center justify-between px-8 z-10 border-b border-slate-200 shrink-0">
+            <header class="bg-white/85 backdrop-blur-md h-20 flex items-center justify-between px-8 z-10 border-b border-slate-200 shrink-0">
                 <div class="flex items-center gap-4">
                     <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
                         @yield('header-title', 'Dashboard')
                     </h1>
                 </div>
                 
-                <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-100 px-4 py-2 rounded-full">
+                <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                 </div>
@@ -147,85 +127,63 @@
 
         </div>
     </div>
-    <!-- Background Backdrop & Modal Container -->
-<div id="logoutModal" class="fixed inset-0 z-[99] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 duration-300">
-    
-    <!-- Modal Card -->
-    <div id="logoutCard" class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-all duration-300">
-        
-        <!-- Icon & Teks -->
-        <div class="flex flex-col items-center text-center">
-            <div class="w-16 h-16 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Konfirmasi Keluar</h3>
-            <p class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari aplikasi?</p>
-        </div>
-        
-        <!-- Tombol Aksi -->
-        <div class="flex gap-3 w-full">
-            <button type="button" onclick="closeLogoutModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-colors">
-                Batal
-            </button>
-            <button type="button" onclick="submitLogout()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-600/30 transition-colors">
-                Ya, Keluar
-            </button>
-        </div>
-        
-    </div>
-</div>
 
-    <!-- Script Sederhana untuk Toggle Profile Card -->
+    <!-- Hidden Form untuk Logout -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+        @csrf
+    </form>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logoutModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="logoutCard" class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 border border-slate-100">
+            <div class="text-center space-y-3">
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900">Konfirmasi Keluar</h3>
+                <p class="text-sm text-slate-500">Apakah Anda yakin ingin keluar dari sistem SIMALAT?</p>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeLogoutModal()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-all">
+                    Batal
+                </button>
+                <button type="button" onclick="submitLogout()" class="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm transition-all shadow-sm">
+                    Ya, Keluar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Pendukung Modal & Toggle -->
     <script>
         function openLogoutModal() {
-        const modal = document.getElementById('logoutModal');
-        const card = document.getElementById('logoutCard');
-        
-        // Tampilkan modal
-        modal.classList.remove('hidden');
-        
-        // Sedikit delay agar animasi Tailwind berjalan mulus
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            card.classList.remove('scale-95');
-            card.classList.add('scale-100');
-        }, 10);
-    }
-
-    function closeLogoutModal() {
-        const modal = document.getElementById('logoutModal');
-        const card = document.getElementById('logoutCard');
-        
-        // Mainkan animasi keluar
-        modal.classList.add('opacity-0');
-        card.classList.remove('scale-100');
-        card.classList.add('scale-95');
-        
-        // Sembunyikan setelah animasi selesai (300ms)
-        setTimeout(() => {
-            modal.classList.add('hidden');
-        }, 300);
-    }
-
-    function submitLogout() {
-        // Eksekusi pengiriman form logout yang ada di sidebar
-        document.getElementById('logout-form').submit();
-    }
-        function toggleProfile() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('hidden');
+            const modal = document.getElementById('logoutModal');
+            const card = document.getElementById('logoutCard');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
         }
 
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('profileDropdown');
-            const profileArea = event.target.closest('.relative.p-4.mt-auto');
+        function closeLogoutModal() {
+            const modal = document.getElementById('logoutModal');
+            const card = document.getElementById('logoutCard');
             
-            if (!profileArea && !dropdown.classList.contains('hidden')) {
-                dropdown.classList.add('hidden');
-            }
-        });
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function submitLogout() {
+            document.getElementById('logout-form').submit();
+        }
     </script>
 </body>
 </html>
