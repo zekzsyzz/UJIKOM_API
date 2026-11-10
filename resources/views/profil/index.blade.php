@@ -19,7 +19,7 @@
         <!-- Header Profil -->
         <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100">
             @if($user->foto_profil)
-                <img src="{{ asset('storage/' . $user->foto_profil) }}" alt="Foto Profil" class="w-24 h-24 rounded-full object-cover border-4 border-blue-50 shadow-md">
+                <img src="{{ asset($user->foto_profil) }}" alt="Foto Profil" class="w-24 h-24 rounded-full object-cover border-4 border-blue-50 shadow-md">
             @else
                 <div class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-3xl shadow-md">
                     {{ substr($user->name, 0, 1) }}

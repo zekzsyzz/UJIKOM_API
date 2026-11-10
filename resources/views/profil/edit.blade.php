@@ -32,14 +32,14 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Foto Profil</label>
                 <div class="flex items-center gap-4">
-                    @if($user->foto)
-                        <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto Profil" class="w-14 h-14 rounded-full object-cover border border-slate-200">
+                    @if($user->foto_profil)
+                        <img src="{{ asset($user->foto_profil) }}" alt="Foto Profil" class="w-14 h-14 rounded-full object-cover border border-slate-200">
                     @else
                         <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
                             {{ substr($user->name, 0, 1) }}
                         </div>
                     @endif
-                    <input type="file" name="foto" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all">
+                    <input type="file" name="foto_profil" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all">
                 </div>
             </div>
 

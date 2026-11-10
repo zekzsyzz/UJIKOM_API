@@ -60,9 +60,13 @@
                             <!-- Kolom Identitas (Avatar + Teks) -->
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 text-slate-600 border border-slate-300 flex items-center justify-center font-bold shadow-sm">
-                                        {{ substr($user->name, 0, 1) }}
-                                    </div>
+                                    @if($user->foto_profil)
+                                        <img src="{{ asset($user->foto_profil) }}" alt="Foto Profil" class="w-24 h-24 rounded-full object-cover border-4 border-blue-50 shadow-md">
+                                    @else
+                                        <div class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-3xl shadow-md">
+                                            {{ substr($user->name, 0, 1) }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <p class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ $user->name }}</p>
                                         <p class="text-xs text-slate-500">{{ $user->email }}</p>

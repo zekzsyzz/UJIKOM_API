@@ -42,14 +42,14 @@ class ProfilController extends Controller
         ];
 
         if ($request->hasFile('foto_profil')) {
-            // Hapus foto_profil lama jika ada dan bukan default
-            if ($data['foto_profil'] && Storage::exists('public/' . $data['foto_profil'])) {
-                Storage::delete('public/' . $data['foto_profil']);
+            if ($user->foto_profil && file_exists(public_path($user->foto_profil))) {
+                unlink(public_path($user->foto_profil));
             }
 
-            // Simpan foto_profil baru ke folder storage/app/public/profil
-            $foto_profilPath = $request->file('foto_profil')->store('profil', 'public');
-            $data['foto_profil'] = $foto_profilPath;
+            $file = $request->file('foto_profil');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/profil'), $filename);
+            $data['foto_profil'] = 'storage/profil/' . $filename;
         }
 
         if ($request->filled('password')) {
