@@ -9,5 +9,6 @@ mkdir -p /var/www/html/storage/framework/views \
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+sudo chown -R $USER:$USER .
 # Jalankan perintah utama Apache
 exec "$@"
